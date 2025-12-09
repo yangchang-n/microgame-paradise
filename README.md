@@ -1,2 +1,1 @@
 # microgame-paradise
-Trash can
