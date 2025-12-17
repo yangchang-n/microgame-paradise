@@ -35,7 +35,7 @@ public class EnemyController : MonoBehaviour
         {
             Vector2 bulletMoveDirection = (playerInfo.transform.position - transform.position);
             float bulletRotationAngle = Mathf.Atan2(bulletMoveDirection.y, bulletMoveDirection.x) * Mathf.Rad2Deg;
-            Quaternion bulletRotation = Quaternion.Euler(0f, 0f, bulletRotationAngle - 90f); // -90¡Æ º¸Á¤
+            Quaternion bulletRotation = Quaternion.Euler(0f, 0f, bulletRotationAngle - 90f);
 
             Instantiate(enemyBulletPrefab, transform.position, bulletRotation);
             cooltime = 0;
