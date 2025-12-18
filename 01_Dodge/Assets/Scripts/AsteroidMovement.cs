@@ -12,10 +12,10 @@ public class AsteroidMovement : MonoBehaviour
     private void InitializeAsteroid()
     {
         int spawnDirection = Random.Range(1, 5);
-        if (spawnDirection == 1) asteroidPos = new Vector2(Random.Range(-10.0f, 10.0f), 6);
-        if (spawnDirection == 2) asteroidPos = new Vector2(Random.Range(-10.0f, 10.0f), -6);
-        if (spawnDirection == 3) asteroidPos = new Vector2(-10, Random.Range(-6.0f, 6.0f));
-        if (spawnDirection == 4) asteroidPos = new Vector2(10, Random.Range(-6.0f, 6.0f));
+        if      (spawnDirection == 1) asteroidPos = new Vector2(Random.Range(-10.0f, 10.0f),  6);
+        else if (spawnDirection == 2) asteroidPos = new Vector2(Random.Range(-10.0f, 10.0f), -6);
+        else if (spawnDirection == 3) asteroidPos = new Vector2(-10, Random.Range(-6.0f, 6.0f));
+        else if (spawnDirection == 4) asteroidPos = new Vector2( 10, Random.Range(-6.0f, 6.0f));
 
         Vector2 rocketPos = GameObject.Find("rocket").transform.position;
         float x_diff = rocketPos.x - asteroidPos.x + Random.Range(-3.0f, 3.0f);
@@ -25,7 +25,7 @@ public class AsteroidMovement : MonoBehaviour
         transform.position = asteroidPos;
         x_direction = x_diff / sqrt_xy;
         y_direction = y_diff / sqrt_xy;
-        speed = Random.Range(0.02f, 0.1f);
+        speed = Random.Range(0.05f, 0.15f);
     }
 
     void Start()

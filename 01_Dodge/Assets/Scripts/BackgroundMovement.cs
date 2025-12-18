@@ -4,11 +4,14 @@ using UnityEngine;
 
 public class BackgroundMovement : MonoBehaviour
 {
-    float moveSpeed = 0.005f;
+    float moveSpeed = 0.01f;
 
-    void Start()
+    private void Awake()
     {
-        
+        Application.targetFrameRate = 60;
+        QualitySettings.vSyncCount = 0;
+        Time.fixedDeltaTime = 1f / 60f;
+        Time.maximumDeltaTime = 0.5f;
     }
 
     void Update()
