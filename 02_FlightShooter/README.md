@@ -2,7 +2,12 @@
 
 <div align = center>
   <img src = 'https://github.com/user-attachments/assets/bd9e7ca8-3e8c-4996-8663-77ed634f5729'>
+  <br>
 </div>
+
+- WASD to move
+- J : Normal attack
+- K : Guided missiles
 
 ### Image References
 

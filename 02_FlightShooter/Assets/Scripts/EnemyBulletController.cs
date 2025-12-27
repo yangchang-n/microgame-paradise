@@ -24,7 +24,10 @@ public class EnemyBulletController : MonoBehaviour
 
         if (collision.gameObject.tag == "Player")
         {
-            collision.gameObject.GetComponent<PlayerController>().DecreaseHp();
+            if (!GameManager.instance.GetIsCleared())
+            {
+                collision.gameObject.GetComponent<PlayerController>().DecreaseHp();
+            }
             Destroy(gameObject);
         }
     }

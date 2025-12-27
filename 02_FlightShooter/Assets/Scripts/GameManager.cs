@@ -17,8 +17,6 @@ public class GameManager : MonoBehaviour
 
         Application.targetFrameRate = 60;
         QualitySettings.vSyncCount = 0;
-        Time.fixedDeltaTime = 1f / 60f;
-        Time.maximumDeltaTime = 0.5f;
     }
 
     void Start()
@@ -33,7 +31,7 @@ public class GameManager : MonoBehaviour
 
     void Update()
     {
-        if (score >= 1000) SetIsCleared(true);
+        if (score >= 1000 && !isGameOver) SetIsCleared(true);
     }
 
     public void ResetAll()
