@@ -5,6 +5,7 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     public Rigidbody rigid;
+    float tanY_Z;
 
     bool isMoving;
     float moveConstant;
@@ -23,6 +24,7 @@ public class PlayerController : MonoBehaviour
     private void Start()
     {
         rigid = GetComponent<Rigidbody>();
+        tanY_Z = Mathf.Tan(20 * Mathf.Deg2Rad);
 
         isMoving = false;
         moveConstant = 250;
@@ -48,9 +50,18 @@ public class PlayerController : MonoBehaviour
         cam.transform.position = camPos.position;
         transform.rotation = Quaternion.Euler(0, mouseX * camRotSpeed, 0);
 
-        if (transform.position.y < -20)
+        float playerY = transform.position.y;
+        float playerZ = transform.position.z;
+
+        if (playerY < -20)
         {
             transform.position = GameManager.instance.playerRespawnPoint;
+            rigid.velocity = Vector3.zero;
+        }
+        else if (playerY < playerZ * tanY_Z - 25)
+        {
+            Vector3 respawnPoint = new Vector3(0, playerY + 30, playerZ - 5);
+            transform.position = respawnPoint;
             rigid.velocity = Vector3.zero;
         }
 
