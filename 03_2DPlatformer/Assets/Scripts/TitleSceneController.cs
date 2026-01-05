@@ -14,7 +14,7 @@ public class TitleSceneController : MonoBehaviour
         }
         if (Input.GetKeyDown(KeyCode.C))
         {
-            SceneManager.LoadScene("Credit");
+            SceneManager.LoadScene("Credits");
         }
     }
 }

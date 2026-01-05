@@ -16,13 +16,17 @@ public class PlayerController : MonoBehaviour
     float moveForce;
     float horizontalInput;
 
+    bool isAttackCasting;
     float attackCoolTime;
-    float attackElapsedTime;
+    float attackCoolTimeElapsed;
+    float attackCastTime;
+    float attackCastTimeElapsed;
 
     bool isDead;
     float deathDelay;
     float deathElapsedTime;
 
+    public GameObject playerSprite;
     public GameObject attackPoint;
     public GameObject playerAttack;
     public Animator animator;
@@ -39,14 +43,17 @@ public class PlayerController : MonoBehaviour
         moveForce = 125.0f;
         horizontalInput = 0;
 
-        attackCoolTime = 0.8f;
-        attackElapsedTime = attackCoolTime;
+        isAttackCasting = false;
+        attackCoolTime = 1f;
+        attackCoolTimeElapsed = attackCoolTime;
+        attackCastTime = 0.3f;
+        attackCastTimeElapsed = 0;
 
         isDead = false;
         deathDelay = 1f;
         deathElapsedTime = 0;
 
-        animator = GetComponent<Animator>();
+        animator = playerSprite.GetComponent<Animator>();
     }
 
     void Update()
@@ -58,7 +65,7 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        attackElapsedTime += Time.deltaTime;
+        attackCoolTimeElapsed += Time.deltaTime;
 
         if (Input.GetKeyDown(KeyCode.Space))
         {
@@ -69,7 +76,7 @@ public class PlayerController : MonoBehaviour
             }
         }
 
-        horizontalInput = Input.GetAxis("Horizontal");
+        horizontalInput = Input.GetAxisRaw("Horizontal");
         if (horizontalInput != 0)
         {
             animator.SetBool("IsWalking", true);
@@ -78,11 +85,22 @@ public class PlayerController : MonoBehaviour
         }
         else animator.SetBool("IsWalking", false);
 
-        if (Input.GetKeyDown(KeyCode.J) && attackCoolTime < attackElapsedTime)
+        if (Input.GetKeyDown(KeyCode.J) && attackCoolTime < attackCoolTimeElapsed)
         {
-            Instantiate(playerAttack, attackPoint.transform.position, transform.rotation);
-            attackElapsedTime = 0;
+            isAttackCasting = true;
+            attackCoolTimeElapsed = 0;
             animator.SetTrigger("IsAttacking");
+        }
+
+        if (isAttackCasting)
+        {
+            attackCastTimeElapsed += Time.deltaTime;
+            if (attackCastTime < attackCastTimeElapsed)
+            {
+                Instantiate(playerAttack, attackPoint.transform.position, transform.rotation);
+                attackCastTimeElapsed = 0;
+                isAttackCasting = false;
+            }
         }
     }
 
@@ -138,6 +156,7 @@ public class PlayerController : MonoBehaviour
         if (playerHealth <= 0)
         {
             playerHealth = 0;
+            playerRb.velocity = Vector2.zero;
             animator.SetTrigger("IsDead");
             isDead = true;
         }

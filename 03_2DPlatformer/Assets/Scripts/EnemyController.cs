@@ -10,13 +10,17 @@ public class EnemyController : MonoBehaviour
     public LayerMask playerLayermask;
     float enemySightRange;
 
-    float attackCooltime;
-    float attackElapsedTime;
+    bool isAttackCasting;
+    float attackCoolTime;
+    float attackCoolTimeElapsed;
+    float attackCastTime;
+    float attackCastTimeElapsed;
 
     bool isDead;
     float deathDelay;
     float deathElapsedTime;
 
+    public GameObject enemySprite;
     public GameObject enemyAttackPoint;
     public GameObject enemyAttack;
     Transform target;
@@ -24,11 +28,14 @@ public class EnemyController : MonoBehaviour
     void Start()
     {
         enemyHealth = 3;
-        enemyAnimator = GetComponent<Animator>();
-        enemySightRange = 2;
+        enemyAnimator = enemySprite.GetComponent<Animator>();
+        enemySightRange = 5;
 
-        attackCooltime = 2;
-        attackElapsedTime = attackCooltime;
+        isAttackCasting = false;
+        attackCoolTime = 2f;
+        attackCoolTimeElapsed = attackCoolTime;
+        attackCastTime = 0.5f;
+        attackCastTimeElapsed = 0;
 
         isDead = false;
         deathDelay = 0.8f;
@@ -37,7 +44,7 @@ public class EnemyController : MonoBehaviour
 
     void Update()
     {
-        attackElapsedTime += Time.deltaTime;
+        attackCoolTimeElapsed += Time.deltaTime;
 
         if (isDead)
         {
@@ -49,6 +56,17 @@ public class EnemyController : MonoBehaviour
             }
         }
         else DetectPlayer();
+
+        if (isAttackCasting)
+        {
+            attackCastTimeElapsed += Time.deltaTime;
+            if (attackCastTime < attackCastTimeElapsed)
+            {
+                Instantiate(enemyAttack, enemyAttackPoint.transform.position, transform.rotation);
+                attackCastTimeElapsed = 0;
+                isAttackCasting = false;
+            }
+        }
     }
 
     void DetectPlayer()
@@ -61,15 +79,13 @@ public class EnemyController : MonoBehaviour
             target = player.transform;
             if (target.position.x <= transform.position.x) transform.rotation = new Quaternion(0, 0, 0, 0);
             else transform.rotation = new Quaternion(0, 180, 0, 0);
-            if (attackElapsedTime > attackCooltime) AttackPlayer();
+            if (attackCoolTime < attackCoolTimeElapsed)
+            {
+                isAttackCasting = true;
+                attackCoolTimeElapsed = 0;
+                enemyAnimator.SetTrigger("IsAttacking");
+            }
         }
-    }
-
-    void AttackPlayer()
-    {
-        Instantiate(enemyAttack, enemyAttackPoint.transform.position, transform.rotation);
-        attackElapsedTime = 0;
-        enemyAnimator.SetTrigger("IsAttacking");
     }
 
     public void TakeDamage(int damage)
