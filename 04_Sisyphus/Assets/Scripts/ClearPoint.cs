@@ -32,7 +32,7 @@ public class ClearPoint : MonoBehaviour
             }
             else if (afterClearTimer > showClearPanelTime)
             {
-                timeText.text = TimeFormat(GameManager.instance.stage1ElapsedTime);
+                timeText.text = TimeFormat(GameManager.instance.stageElapsedTime);
                 clearPanel.SetActive(true);
             }
         }

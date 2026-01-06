@@ -10,6 +10,6 @@
 |01|<img src="https://github.com/user-attachments/assets/7f841764-58a8-45bc-b2c4-003f37aa58c4" width="40">|Dodge|2025-12-09|2025-12-18|v0.1|Done|
 |02|<img src="https://github.com/user-attachments/assets/fb9ca62b-03f8-4114-b199-4cf84c15c184" width="40">|Flight Shooter|2025-12-18|2025-12-27|v0.1|Done|
 |03|<img src="https://github.com/user-attachments/assets/a7e3382c-0493-4316-8f5c-86661e16d2aa" width="40">|2D Platformer|2025-12-22|2026-01-05|v0.1|Paused|
-|04|<img src="https://github.com/user-attachments/assets/222bc8db-2eae-467c-8d5f-d8102543bde0" width="40">|Sisyphus|2025-12-27|2026-01-05|v0.1|Making|
+|04|<img src="https://github.com/user-attachments/assets/222bc8db-2eae-467c-8d5f-d8102543bde0" width="40">|Sisyphus|2025-12-27|2026-01-06|v0.2|Making|
 
 </div>

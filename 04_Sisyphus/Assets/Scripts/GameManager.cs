@@ -13,9 +13,8 @@ public class GameManager : MonoBehaviour
     bool isCleared;
     bool isGameOver;
     public bool isPaused;
-
-    public bool isStage1;
-    public float stage1ElapsedTime;
+    public bool isInStage;
+    public float stageElapsedTime;
 
     private void Awake()
     {
@@ -36,7 +35,7 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
-        if (isStage1 && !isPaused && !isCleared) stage1ElapsedTime += Time.deltaTime;
+        if (isInStage && !isPaused && !isCleared) stageElapsedTime += Time.deltaTime;
     }
 
     public void ResetAll()
@@ -44,8 +43,8 @@ public class GameManager : MonoBehaviour
         isCleared = false;
         isGameOver = false;
         isPaused = false;
-        isStage1 = false;
-        stage1ElapsedTime = 0;
+        isInStage = false;
+        stageElapsedTime = 0;
     }
 
     public void SetCleared(bool clear)

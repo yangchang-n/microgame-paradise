@@ -21,12 +21,12 @@ public class TitleUI : MonoBehaviour
     public void StartGame()
     {
         GameManager.instance.ResetAll();
-        sceneChanger.SceneChange("Stage1");
+        sceneChanger.SceneChange("Stage");
     }
 
     public void LoadCredit()
     {
-        sceneChanger.SceneChange("Credit");
+        sceneChanger.SceneChange("Credits");
     }
 
     public void QuitGame()
