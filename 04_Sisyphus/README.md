@@ -7,10 +7,10 @@
 
 ### BGM
 
-https://amachamusic.chagasi.com/music_haruenoakogare.html
+- https://amachamusic.chagasi.com/music_haruenoakogare.html
 
 ### Assets
 
-https://assetstore.unity.com/packages/3d/animations/human-basic-motions-free-154271
-https://assetstore.unity.com/packages/3d/environments/dungeons/3d-props-cartoon-box-map-50743
-https://assetstore.unity.com/packages/2d/textures-materials/sky/allsky-free-10-sky-skybox-set-146014
+- https://assetstore.unity.com/packages/3d/animations/human-basic-motions-free-154271
+- https://assetstore.unity.com/packages/3d/environments/dungeons/3d-props-cartoon-box-map-50743
+- https://assetstore.unity.com/packages/2d/textures-materials/sky/allsky-free-10-sky-skybox-set-146014
