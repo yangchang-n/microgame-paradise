@@ -879,7 +879,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 80, y: 0}
+  m_AnchoredPosition: {x: 80, y: 40}
   m_SizeDelta: {x: 1500, y: 800}
   m_Pivot: {x: 0, y: 0}
 --- !u!114 &1188277848
@@ -903,9 +903,10 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_text: "This game is made by Yang Changeun (@yangchang-n)\nimitating <The game
-    of Sisyphus> from Cream games.\n\nUsed assets from Unity Asset Store : \n- \"Human
-    Basic Motions FREE\" by Kevin Iglesias\n- \"3D Props - Cartoon Box Map\" by LAYERLAB\n-
-    \"AllSky Free - 10 Sky / Skybox Set\" by rpgwhitelock"
+    of Sisyphus> from Cream games.\n\nBGM : \"Harue no Akogare\" by Music Atelier
+    Amacha\nUsed assets from Unity Asset Store : \n- \"Human Basic Motions FREE\"
+    by Kevin Iglesias\n- \"3D Props - Cartoon Box Map\" by LAYERLAB\n- \"AllSky Free
+    - 10 Sky / Skybox Set\" by rpgwhitelock"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}

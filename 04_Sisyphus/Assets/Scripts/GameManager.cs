@@ -6,6 +6,8 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
     public static GameManager instance;
+    int windowedWidth;
+    int windowedHeight;
 
     public Vector3 rockRespawnPoint = new Vector3(0, 6f, 4f);
     public Vector3 playerRespawnPoint = new Vector3(0, 2f, 0);
@@ -22,6 +24,9 @@ public class GameManager : MonoBehaviour
         else Destroy(gameObject);
         DontDestroyOnLoad(gameObject);
 
+        windowedWidth = 1280;
+        windowedHeight = 720;
+
         Application.targetFrameRate = 60;
         QualitySettings.vSyncCount = 0;
     }
@@ -35,6 +40,7 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
+        if (Input.GetKeyDown(KeyCode.Return)) ToggleFullscreen();
         if (isInStage && !isPaused && !isCleared) stageElapsedTime += Time.deltaTime;
     }
 
@@ -66,5 +72,18 @@ public class GameManager : MonoBehaviour
     public bool GetGameOver()
     {
         return isGameOver;
+    }
+
+    void ToggleFullscreen()
+    {
+        if (Screen.fullScreen)
+        {
+            Screen.SetResolution(windowedWidth, windowedHeight, FullScreenMode.Windowed);
+        }
+        else
+        {
+            Resolution monitorRes = Screen.currentResolution;
+            Screen.SetResolution(monitorRes.width, monitorRes.height, FullScreenMode.FullScreenWindow);
+        }
     }
 }

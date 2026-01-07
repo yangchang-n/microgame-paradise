@@ -12,13 +12,11 @@ public class ClearPoint : MonoBehaviour
 
     float afterClearTimer;
     float showClearPanelTime;
-    float returnTitleTime;
 
     private void Start()
     {
         afterClearTimer = 0;
         showClearPanelTime = 1f;
-        returnTitleTime = 4f;
     }
 
     private void Update()
@@ -26,12 +24,10 @@ public class ClearPoint : MonoBehaviour
         if (GameManager.instance.GetCleared())
         {
             afterClearTimer += Time.deltaTime;
-            if (afterClearTimer > returnTitleTime)
+            if (afterClearTimer > showClearPanelTime)
             {
-                sceneChanger.SceneChange("TitleScene");
-            }
-            else if (afterClearTimer > showClearPanelTime)
-            {
+                Cursor.visible = true;
+                Cursor.lockState = CursorLockMode.None;
                 timeText.text = TimeFormat(GameManager.instance.stageElapsedTime);
                 clearPanel.SetActive(true);
             }

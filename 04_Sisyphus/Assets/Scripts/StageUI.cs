@@ -10,7 +10,8 @@ public class StageUI : MonoBehaviour
     public GameObject pausePanel;
     public GameObject clearPanel;
     public Button resumeButton;
-    public Button titleButton;
+    public Button titleButton1;
+    public Button titleButton2;
     public TMP_Text timeText;
 
     private void Start()
@@ -22,7 +23,8 @@ public class StageUI : MonoBehaviour
         clearPanel.SetActive(false);
 
         resumeButton.onClick.AddListener(ResumeGame);
-        titleButton.onClick.AddListener(ReturnToTitle);
+        titleButton1.onClick.AddListener(ReturnToTitle);
+        titleButton2.onClick.AddListener(ReturnToTitle);
     }
 
     private void Update()
