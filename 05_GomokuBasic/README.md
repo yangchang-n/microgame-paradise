@@ -5,6 +5,8 @@
   <br>
 </div>
 
+###
 
-Made scripts with Claude AI.
-I tried to made with Unity AI, but AI system in Unity 6.3 was not stabled yet.
+Made with Claude Sonnet 4.5.
+
+I tried to use Unity AI, but AI system in Unity 6.3 was not stabled yet.
