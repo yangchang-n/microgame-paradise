@@ -2,7 +2,7 @@
 %TAG !u! tag:unity3d.com,2011:
 --- !u!78 &1
 TagManager:
-  serializedVersion: 3
+  serializedVersion: 2
   tags: []
   layers:
   - Default
@@ -42,7 +42,5 @@ TagManager:
     uniqueID: 0
     locked: 0
   - name: Stone
-    uniqueID: 1183583559
+    uniqueID: 1254028487
     locked: 0
-  m_RenderingLayers:
-  - Default
