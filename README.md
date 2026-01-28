@@ -12,5 +12,6 @@
 |03|<img src="https://github.com/user-attachments/assets/a7e3382c-0493-4316-8f5c-86661e16d2aa" width="40">|2D Platformer|2025-12-22|2026-01-05|v0.1|2022.3.62f3|Paused|
 |04|<img src="https://github.com/user-attachments/assets/222bc8db-2eae-467c-8d5f-d8102543bde0" width="40">|Sisyphus|2025-12-27|2026-01-07|v0.3|2022.3.62f3|Done|
 |05|<img src="https://github.com/user-attachments/assets/6671dbae-b2c9-4e9e-b411-d7030c35b0f9" width="40">|Gomoku Basic|2026-01-12|2026-01-28|v0.0|2022.3.62f3|Done|
+|06|---|Gomoku Sand|2026-01-28|2026-01-28|v0.0|2022.3.62f3|Making|
 
 </div>
