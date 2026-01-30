@@ -151,10 +151,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3377ef3e9ce56e2468814e48b75a7579, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gridSize: 15
-  cellPixelSize: 20
-  pixelScale: 4
-  clickableRows: 5
+  clickableStartRow: 2
+  clickableEndRow: 5
 --- !u!4 &254848386
 Transform:
   m_ObjectHideFlags: 0
@@ -206,7 +204,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
-  m_BackGroundColor: {r: 0, g: 0, b: 0, a: 0}
+  m_BackGroundColor: {r: 0.5, g: 0.3, b: 0.15, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -291,11 +289,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 11f250c1f9e095b4ebada1ba60ee40a8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sandSimulator: {fileID: 254848385}
-  sandPerTurn: 400
-  gaugeWidth: 200
-  gaugeHeight: 20
-  gaugeYOffset: 50
+  skyColor: {r: 0.4, g: 0.85, b: 0.95, a: 1}
+  brownColor: {r: 0.6, g: 0.4, b: 0.2, a: 1}
+  boardBackgroundColor: {r: 0.85, g: 0.75, b: 0.6, a: 1}
+  clickableAreaColor: {r: 0.95, g: 0.9, b: 0.8, a: 1}
+  gridLineColor: {r: 0, g: 0, b: 0, a: 1}
+  wallColor: {r: 0.3, g: 0.3, b: 0.3, a: 1}
+  emptyGaugeColor: {r: 0, g: 0, b: 0, a: 0}
+  gaugeBorderColor: {r: 0, g: 0, b: 0, a: 0}
 --- !u!4 &1078086200
 Transform:
   m_ObjectHideFlags: 0

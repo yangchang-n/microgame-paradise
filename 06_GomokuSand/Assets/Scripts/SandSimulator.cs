@@ -5,7 +5,12 @@ public class SandSimulator : MonoBehaviour
     // Grid Settings
     private int gridSize;
     private int cellPixelSize;
-    public int clickableRows;
+
+    [Header("Clickable Area Settings")]
+    [Range(1, 15)]
+    public int clickableStartRow = 2;  // 위에서부터 시작 줄 (2번째 줄)
+    [Range(1, 15)]
+    public int clickableEndRow = 5;    // 위에서부터 끝 줄 (5번째 줄)
 
     private int width;
     private int height;
@@ -23,45 +28,23 @@ public class SandSimulator : MonoBehaviour
     private Texture2D texture;
     private SpriteRenderer spriteRenderer;
 
-    // Colors
-    private Color skySandColor;
-    private Color brownSandColor;
-    private Color wallColor;
-    private Color boardBackgroundColor;
-    private Color clickableAreaColor;
-    private Color gridLineColor;
-
     // Constants
     private const int SPAWN_PATTERN_HEIGHT = 3;
-    private const int SPAWN_PATTERN_WIDTH = 3;
 
     void Start()
     {
         InitializeSettings();
-        InitializeColors();
         InitializeGrid();
         SetupRenderer();
-        SetupCamera();
     }
 
     void InitializeSettings()
     {
         gridSize = 15;
         cellPixelSize = 20;
-        clickableRows = 5;
 
         width = gridSize * cellPixelSize + 2;  // +2 for walls
         height = gridSize * cellPixelSize + 1; // +1 for bottom wall
-    }
-
-    void InitializeColors()
-    {
-        skySandColor = new Color(0.4f, 0.85f, 0.95f);
-        brownSandColor = new Color(0.6f, 0.4f, 0.2f);
-        wallColor = new Color(0.3f, 0.3f, 0.3f);
-        boardBackgroundColor = new Color(0.85f, 0.75f, 0.6f);
-        clickableAreaColor = new Color(0.95f, 0.9f, 0.8f);
-        gridLineColor = Color.black;
     }
 
     void InitializeGrid()
@@ -96,12 +79,6 @@ public class SandSimulator : MonoBehaviour
             1f
         );
         spriteRenderer.sprite = sprite;
-    }
-
-    void SetupCamera()
-    {
-        Camera.main.orthographicSize = height / 2f * 1.3f;
-        Camera.main.transform.position = new Vector3(0, 15f, -10f);
     }
 
     public void SimulatePhysics()
@@ -161,34 +138,37 @@ public class SandSimulator : MonoBehaviour
     void DrawBackground()
     {
         int minClickableY = GetMinClickableY();
+        int maxClickableY = GetMaxClickableY();
 
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)
             {
-                Color color = GetPixelColor(x, y, minClickableY);
+                Color color = GetPixelColor(x, y, minClickableY, maxClickableY);
                 texture.SetPixel(x, y, color);
             }
         }
     }
 
-    Color GetPixelColor(int x, int y, int minClickableY)
+    Color GetPixelColor(int x, int y, int minClickableY, int maxClickableY)
     {
         // Check for sand or wall first
         if (grid[x, y] != CellType.Empty)
         {
             return grid[x, y] switch
             {
-                CellType.SkySand => skySandColor,
-                CellType.BrownSand => brownSandColor,
-                CellType.Wall => wallColor,
-                _ => boardBackgroundColor
+                CellType.SkySand => GameManager.Instance.skyColor,
+                CellType.BrownSand => GameManager.Instance.brownColor,
+                CellType.Wall => GameManager.Instance.wallColor,
+                _ => GameManager.Instance.boardBackgroundColor
             };
         }
 
         // Empty cells - check if in clickable area
-        bool isInClickableArea = x > 0 && x < width - 1 && y > minClickableY && y > 0;
-        return isInClickableArea ? clickableAreaColor : boardBackgroundColor;
+        bool isInClickableArea = x > 0 && x < width - 1 &&
+                                  y > minClickableY && y <= maxClickableY &&
+                                  y > 0;
+        return isInClickableArea ? GameManager.Instance.clickableAreaColor : GameManager.Instance.boardBackgroundColor;
     }
 
     void DrawGridLines()
@@ -199,7 +179,7 @@ public class SandSimulator : MonoBehaviour
             int x = 1 + i * cellPixelSize;
             for (int y = 1; y < height; y++)
             {
-                texture.SetPixel(x, y, gridLineColor);
+                texture.SetPixel(x, y, GameManager.Instance.gridLineColor);
             }
         }
 
@@ -211,12 +191,12 @@ public class SandSimulator : MonoBehaviour
 
             for (int x = 1; x < width - 1; x++)
             {
-                texture.SetPixel(x, y, gridLineColor);
+                texture.SetPixel(x, y, GameManager.Instance.gridLineColor);
             }
         }
     }
 
-    public bool SpawnSand(int worldX, int worldY, CellType sandType, int amount)
+    public bool SpawnSand(int gridX, int gridY, CellType sandType, int amount)
     {
         int spawnedCount = 0;
 
@@ -225,8 +205,8 @@ public class SandSimulator : MonoBehaviour
         {
             for (int dx = -1; dx <= 1 && spawnedCount < amount; dx++)
             {
-                int posX = worldX + dx;
-                int posY = worldY + dy;
+                int posX = gridX + dx;
+                int posY = gridY + dy;
 
                 if (IsInBounds(posX, posY) && grid[posX, posY] == CellType.Empty)
                 {
@@ -242,7 +222,16 @@ public class SandSimulator : MonoBehaviour
     // Helper Methods
     int GetMinClickableY()
     {
-        return height - 1 - (clickableRows * cellPixelSize);
+        // Ensure startRow is not greater than endRow
+        int actualEndRow = Mathf.Max(clickableStartRow, clickableEndRow);
+        return height - 1 - (actualEndRow * cellPixelSize);
+    }
+
+    int GetMaxClickableY()
+    {
+        // Ensure startRow is not greater than endRow
+        int actualStartRow = Mathf.Min(clickableStartRow, clickableEndRow);
+        return height - 1 - ((actualStartRow - 1) * cellPixelSize);
     }
 
     bool IsSand(CellType type)
@@ -253,7 +242,11 @@ public class SandSimulator : MonoBehaviour
     public bool IsInClickableArea(int x, int y)
     {
         if (!IsInBounds(x, y)) return false;
-        return y > GetMinClickableY();
+
+        int minClickableY = GetMinClickableY();
+        int maxClickableY = GetMaxClickableY();
+
+        return y > minClickableY && y <= maxClickableY;
     }
 
     public bool IsInBounds(int x, int y)
@@ -261,14 +254,7 @@ public class SandSimulator : MonoBehaviour
         return x >= 0 && x < width && y >= 0 && y < height;
     }
 
-    public Vector2Int WorldToGrid(Vector3 worldPos)
-    {
-        int gridX = Mathf.RoundToInt(worldPos.x + width / 2f);
-        int gridY = Mathf.RoundToInt(worldPos.y + height / 2f);
-        return new Vector2Int(gridX, gridY);
-    }
-
-    // Getters
+    // Public Getters
     public CellType GetCell(int x, int y)
     {
         return IsInBounds(x, y) ? grid[x, y] : CellType.Wall;

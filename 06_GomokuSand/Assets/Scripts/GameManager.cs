@@ -2,12 +2,15 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
+    // Singleton
+    public static GameManager Instance { get; private set; }
+
     // References
     private SandSimulator sandSimulator;
 
     // Game Settings
     private int sandPerTurn;
-    private const int SAND_SPAWN_RATE = 5; // Sand particles spawned per frame
+    private const int SAND_SPAWN_RATE = 5;
 
     // Gauge Settings
     private int gaugeWidth;
@@ -25,17 +28,39 @@ public class GameManager : MonoBehaviour
     private SpriteRenderer gaugeRenderer;
     private Texture2D gaugeTexture;
 
-    // Colors
+    [Header("Player Colors")]
     public Color skyColor = new Color(0.4f, 0.85f, 0.95f);
     public Color brownColor = new Color(0.6f, 0.4f, 0.2f);
+
+    [Header("Board Colors")]
+    public Color boardBackgroundColor = new Color(0.85f, 0.75f, 0.6f);
+    public Color clickableAreaColor = new Color(0.95f, 0.9f, 0.8f);
+    public Color gridLineColor = Color.black;
+    public Color wallColor = new Color(0.3f, 0.3f, 0.3f);
+
+    [Header("Gauge Colors")]
     public Color emptyGaugeColor = new Color(0.2f, 0.2f, 0.2f);
     public Color gaugeBorderColor = new Color(0.6f, 0.6f, 0.6f);
+
+    void Awake()
+    {
+        // Singleton pattern
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
+    }
 
     void Start()
     {
         InitializeSettings();
-        InitializeColors();
         FindSimulator();
+        SetupCamera();
         SetupGauge();
         StartNewTurn();
     }
@@ -52,14 +77,6 @@ public class GameManager : MonoBehaviour
         waitingForMouseRelease = false;
     }
 
-    void InitializeColors()
-    {
-        skyColor = new Color(0.4f, 0.85f, 0.95f);
-        brownColor = new Color(0.6f, 0.4f, 0.2f);
-        emptyGaugeColor = new Color(0.2f, 0.2f, 0.2f);
-        gaugeBorderColor = new Color(0.6f, 0.6f, 0.6f);
-    }
-
     void FindSimulator()
     {
         sandSimulator = FindObjectOfType<SandSimulator>();
@@ -68,6 +85,13 @@ public class GameManager : MonoBehaviour
         {
             Debug.LogError("SandSimulator not found in scene!");
         }
+    }
+
+    void SetupCamera()
+    {
+        float boardHeight = sandSimulator.GetHeight();
+        Camera.main.orthographicSize = boardHeight / 2f * 1.3f;
+        Camera.main.transform.position = new Vector3(0, 15f, -10f);
     }
 
     void SetupGauge()
@@ -131,7 +155,7 @@ public class GameManager : MonoBehaviour
     void SpawnSandAtMouse()
     {
         Vector3 worldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        Vector2Int gridPos = sandSimulator.WorldToGrid(worldPos);
+        Vector2Int gridPos = WorldToGrid(worldPos);
 
         if (!sandSimulator.IsInClickableArea(gridPos.x, gridPos.y))
         {
@@ -150,6 +174,16 @@ public class GameManager : MonoBehaviour
                 EndTurn();
             }
         }
+    }
+
+    Vector2Int WorldToGrid(Vector3 worldPos)
+    {
+        int width = sandSimulator.GetWidth();
+        int height = sandSimulator.GetHeight();
+
+        int gridX = Mathf.RoundToInt(worldPos.x + width / 2f);
+        int gridY = Mathf.RoundToInt(worldPos.y + height / 2f);
+        return new Vector2Int(gridX, gridY);
     }
 
     SandSimulator.CellType GetCurrentPlayerSandType()
@@ -226,4 +260,7 @@ public class GameManager : MonoBehaviour
         waitingForMouseRelease = false;
         StartNewTurn();
     }
+
+    // Public getters
+    public int GetCurrentPlayer() => currentPlayer;
 }
