@@ -1,4 +1,6 @@
 using UnityEngine;
+using UnityEngine.UI;
+using System.Collections;
 
 public class GameManager : MonoBehaviour
 {
@@ -23,10 +25,21 @@ public class GameManager : MonoBehaviour
     private bool isPlayerTurn;
     private bool waitingForMouseRelease;
 
+    [Header("Game Over State")]
+    public bool isGameOver = false;
+    public bool isOasisWin = false;
+    public bool isMudWin = false;
+
     // Gauge Objects
     private GameObject gaugeObject;
     private SpriteRenderer gaugeRenderer;
     private Texture2D gaugeTexture;
+
+    [Header("UI References")]
+    public GameObject victoryPanel;
+    public GameObject oasisWinText;
+    public GameObject mudWinText;
+    public Button resetButton;
 
     [Header("Player Colors")]
     public Color skyColor = new Color(0.4f, 0.85f, 0.95f);
@@ -44,7 +57,6 @@ public class GameManager : MonoBehaviour
 
     void Awake()
     {
-        // Singleton pattern
         if (Instance == null)
         {
             Instance = this;
@@ -62,6 +74,7 @@ public class GameManager : MonoBehaviour
         FindSimulator();
         SetupCamera();
         SetupGauge();
+        SetupUI();
         StartNewTurn();
     }
 
@@ -75,6 +88,10 @@ public class GameManager : MonoBehaviour
         currentPlayer = 0;
         isPlayerTurn = true;
         waitingForMouseRelease = false;
+
+        isGameOver = false;
+        isOasisWin = false;
+        isMudWin = false;
     }
 
     void FindSimulator()
@@ -115,6 +132,23 @@ public class GameManager : MonoBehaviour
         UpdateGauge();
     }
 
+    void SetupUI()
+    {
+        // 패널과 텍스트 초기 비활성화
+        if (victoryPanel != null)
+            victoryPanel.SetActive(false);
+
+        if (oasisWinText != null)
+            oasisWinText.SetActive(false);
+
+        if (mudWinText != null)
+            mudWinText.SetActive(false);
+
+        // 리셋 버튼 이벤트 연결
+        if (resetButton != null)
+            resetButton.onClick.AddListener(ResetGame);
+    }
+
     void PositionGauge()
     {
         float boardTop = sandSimulator.GetHeight() / 2f;
@@ -123,6 +157,9 @@ public class GameManager : MonoBehaviour
 
     void Update()
     {
+        if (isGameOver)
+            return; // 게임 오버 시 입력 무시
+
         HandleTurnTransition();
         HandlePlayerInput();
         UpdateSimulation();
@@ -133,8 +170,15 @@ public class GameManager : MonoBehaviour
         if (waitingForMouseRelease && !Input.GetMouseButton(0))
         {
             waitingForMouseRelease = false;
-            SwitchPlayer();
+            // 1초 뒤에 턴 전환
+            StartCoroutine(SwitchPlayerAfterDelay(1f));
         }
+    }
+
+    IEnumerator SwitchPlayerAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        SwitchPlayer();
     }
 
     void HandlePlayerInput()
@@ -149,7 +193,45 @@ public class GameManager : MonoBehaviour
     void UpdateSimulation()
     {
         sandSimulator.SimulatePhysics();
+        sandSimulator.SimulatePhysics();
         sandSimulator.UpdateTexture();
+
+        // 승리 조건 체크
+        CheckVictoryCondition();
+    }
+
+    void CheckVictoryCondition()
+    {
+        if (isGameOver) return;
+
+        int winner = sandSimulator.CheckWinCondition();
+
+        if (winner == 1) // Oasis (Sky) 승리
+        {
+            isGameOver = true;
+            isOasisWin = true;
+            ShowVictoryScreen();
+            Debug.Log("Oasis (Sky) Wins!");
+        }
+        else if (winner == 2) // Mud (Brown) 승리
+        {
+            isGameOver = true;
+            isMudWin = true;
+            ShowVictoryScreen();
+            Debug.Log("Mud (Brown) Wins!");
+        }
+    }
+
+    void ShowVictoryScreen()
+    {
+        if (victoryPanel != null)
+            victoryPanel.SetActive(true);
+
+        if (isOasisWin && oasisWinText != null)
+            oasisWinText.SetActive(true);
+
+        if (isMudWin && mudWinText != null)
+            mudWinText.SetActive(true);
     }
 
     void SpawnSandAtMouse()
@@ -212,19 +294,16 @@ public class GameManager : MonoBehaviour
 
     Color GetGaugePixelColor(int x, int y, int fillWidth, Color fillColor)
     {
-        // Border
         if (x == 0 || x == gaugeWidth - 1 || y == 0 || y == gaugeHeight - 1)
         {
             return gaugeBorderColor;
         }
 
-        // Filled area
         if (x >= 2 && x < fillWidth + 2)
         {
             return fillColor;
         }
 
-        // Empty area
         return emptyGaugeColor;
     }
 
@@ -256,11 +335,31 @@ public class GameManager : MonoBehaviour
 
     public void ResetGame()
     {
+        // 게임 상태 초기화
         currentPlayer = 0;
         waitingForMouseRelease = false;
+        isGameOver = false;
+        isOasisWin = false;
+        isMudWin = false;
+
+        // UI 비활성화
+        if (victoryPanel != null)
+            victoryPanel.SetActive(false);
+
+        if (oasisWinText != null)
+            oasisWinText.SetActive(false);
+
+        if (mudWinText != null)
+            mudWinText.SetActive(false);
+
+        // 시뮬레이터 초기화
+        sandSimulator.ResetBoard();
+
+        // 새 턴 시작
         StartNewTurn();
+
+        Debug.Log("Game Reset!");
     }
 
-    // Public getters
     public int GetCurrentPlayer() => currentPlayer;
 }

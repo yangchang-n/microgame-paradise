@@ -8,14 +8,13 @@ public class SandSimulator : MonoBehaviour
 
     [Header("Clickable Area Settings")]
     [Range(1, 15)]
-    public int clickableStartRow = 2;  // 위에서부터 시작 줄 (2번째 줄)
+    public int clickableStartRow = 2;
     [Range(1, 15)]
-    public int clickableEndRow = 5;    // 위에서부터 끝 줄 (5번째 줄)
+    public int clickableEndRow = 5;
 
     private int width;
     private int height;
 
-    // Cell Types
     public enum CellType
     {
         Empty,
@@ -24,18 +23,34 @@ public class SandSimulator : MonoBehaviour
         Wall
     }
 
+    public enum CellOwnership
+    {
+        None,
+        Sky,
+        Brown
+    }
+
     private CellType[,] grid;
+    private CellOwnership[,] ownership;
+    private TextMesh[,] ownershipTexts;
     private Texture2D texture;
     private SpriteRenderer spriteRenderer;
 
-    // Constants
     private const int SPAWN_PATTERN_HEIGHT = 3;
+    private const float OWNERSHIP_THRESHOLD = 0.5f;
+
+    [Header("Ownership Text Settings")]
+    public Color ownershipTextColor = new Color(1f, 1f, 1f, 0.8f);
+    public int ownershipCharacterSize = 100;
+    public int ownershipFontSize = 14;
 
     void Start()
     {
         InitializeSettings();
         InitializeGrid();
+        InitializeOwnership();
         SetupRenderer();
+        CreateOwnershipTexts();
     }
 
     void InitializeSettings()
@@ -43,25 +58,36 @@ public class SandSimulator : MonoBehaviour
         gridSize = 15;
         cellPixelSize = 20;
 
-        width = gridSize * cellPixelSize + 2;  // +2 for walls
-        height = gridSize * cellPixelSize + 1; // +1 for bottom wall
+        width = gridSize * cellPixelSize + 2;
+        height = gridSize * cellPixelSize + 1;
     }
 
     void InitializeGrid()
     {
         grid = new CellType[width, height];
 
-        // Bottom wall
         for (int x = 0; x < width; x++)
         {
             grid[x, 0] = CellType.Wall;
         }
 
-        // Side walls
         for (int y = 0; y < height; y++)
         {
             grid[0, y] = CellType.Wall;
             grid[width - 1, y] = CellType.Wall;
+        }
+    }
+
+    void InitializeOwnership()
+    {
+        ownership = new CellOwnership[gridSize, gridSize];
+
+        for (int x = 0; x < gridSize; x++)
+        {
+            for (int y = 0; y < gridSize; y++)
+            {
+                ownership[x, y] = CellOwnership.None;
+            }
         }
     }
 
@@ -81,12 +107,52 @@ public class SandSimulator : MonoBehaviour
         spriteRenderer.sprite = sprite;
     }
 
+    void CreateOwnershipTexts()
+    {
+        ownershipTexts = new TextMesh[gridSize, gridSize];
+
+        GameObject textsParent = new GameObject("OwnershipTexts");
+        textsParent.transform.SetParent(transform);
+        textsParent.transform.localPosition = Vector3.zero;
+
+        for (int cellX = 0; cellX < gridSize; cellX++)
+        {
+            for (int cellY = 0; cellY < gridSize; cellY++)
+            {
+                GameObject textObj = new GameObject($"Text_{cellX}_{cellY}");
+                textObj.transform.SetParent(textsParent.transform);
+
+                TextMesh textMesh = textObj.AddComponent<TextMesh>();
+
+                textMesh.text = "";
+                textMesh.characterSize = ownershipCharacterSize;
+                textMesh.fontSize = ownershipFontSize;
+                textMesh.color = ownershipTextColor;
+                textMesh.anchor = TextAnchor.MiddleCenter;
+                textMesh.alignment = TextAlignment.Center;
+                textMesh.fontStyle = FontStyle.Bold;
+
+                MeshRenderer meshRenderer = textObj.GetComponent<MeshRenderer>();
+                meshRenderer.sortingOrder = 10;
+
+                float pixelCenterX = 1 + cellX * cellPixelSize + cellPixelSize / 2f;
+                float pixelCenterY = 1 + cellY * cellPixelSize + cellPixelSize / 2f;
+
+                float worldX = pixelCenterX - width / 2f;
+                float worldY = pixelCenterY - height / 2f;
+
+                textObj.transform.position = new Vector3(worldX, worldY, -1f);
+                textObj.transform.localScale = Vector3.one * 0.1f;
+
+                ownershipTexts[cellX, cellY] = textMesh;
+            }
+        }
+    }
+
     public void SimulatePhysics()
     {
-        // Scan from bottom to top to avoid processing same particle twice
         for (int y = 1; y < height - 1; y++)
         {
-            // Randomize scan direction for natural sand behavior
             bool scanLeft = Random.value > 0.5f;
 
             for (int x = 1; x < width - 1; x++)
@@ -105,7 +171,6 @@ public class SandSimulator : MonoBehaviour
     {
         CellType sandType = grid[x, y];
 
-        // Try to fall down
         if (grid[x, y - 1] == CellType.Empty)
         {
             grid[x, y] = CellType.Empty;
@@ -113,7 +178,6 @@ public class SandSimulator : MonoBehaviour
             return;
         }
 
-        // Try to fall diagonally
         int direction = Random.value > 0.5f ? 1 : -1;
 
         if (grid[x + direction, y - 1] == CellType.Empty)
@@ -130,9 +194,184 @@ public class SandSimulator : MonoBehaviour
 
     public void UpdateTexture()
     {
+        UpdateOwnership();
         DrawBackground();
         DrawGridLines();
+        UpdateOwnershipTexts();
         texture.Apply();
+    }
+
+    void UpdateOwnership()
+    {
+        for (int cellX = 0; cellX < gridSize; cellX++)
+        {
+            for (int cellY = 0; cellY < gridSize; cellY++)
+            {
+                int skyCount = 0;
+                int brownCount = 0;
+
+                int startX = 1 + cellX * cellPixelSize;
+                int startY = 1 + cellY * cellPixelSize;
+                int endX = startX + cellPixelSize;
+                int endY = startY + cellPixelSize;
+
+                for (int x = startX; x < endX; x++)
+                {
+                    for (int y = startY; y < endY; y++)
+                    {
+                        if (grid[x, y] == CellType.SkySand)
+                        {
+                            skyCount++;
+                        }
+                        else if (grid[x, y] == CellType.BrownSand)
+                        {
+                            brownCount++;
+                        }
+                    }
+                }
+
+                float skyRatio = (float)skyCount / (cellPixelSize * cellPixelSize);
+                float brownRatio = (float)brownCount / (cellPixelSize * cellPixelSize);
+
+                if (skyRatio >= OWNERSHIP_THRESHOLD)
+                {
+                    ownership[cellX, cellY] = CellOwnership.Sky;
+                }
+                else if (brownRatio >= OWNERSHIP_THRESHOLD)
+                {
+                    ownership[cellX, cellY] = CellOwnership.Brown;
+                }
+                else
+                {
+                    ownership[cellX, cellY] = CellOwnership.None;
+                }
+            }
+        }
+    }
+
+    public int CheckWinCondition()
+    {
+        // 1 = Sky 승리, 2 = Brown 승리, 0 = 승자 없음
+
+        // 가로 체크
+        for (int y = 0; y < gridSize; y++)
+        {
+            for (int x = 0; x <= gridSize - 5; x++)
+            {
+                CellOwnership first = ownership[x, y];
+                if (first == CellOwnership.None) continue;
+
+                bool isWin = true;
+                for (int i = 1; i < 5; i++)
+                {
+                    if (ownership[x + i, y] != first)
+                    {
+                        isWin = false;
+                        break;
+                    }
+                }
+
+                if (isWin)
+                    return first == CellOwnership.Sky ? 1 : 2;
+            }
+        }
+
+        // 세로 체크
+        for (int x = 0; x < gridSize; x++)
+        {
+            for (int y = 0; y <= gridSize - 5; y++)
+            {
+                CellOwnership first = ownership[x, y];
+                if (first == CellOwnership.None) continue;
+
+                bool isWin = true;
+                for (int i = 1; i < 5; i++)
+                {
+                    if (ownership[x, y + i] != first)
+                    {
+                        isWin = false;
+                        break;
+                    }
+                }
+
+                if (isWin)
+                    return first == CellOwnership.Sky ? 1 : 2;
+            }
+        }
+
+        // 대각선 (\) 체크
+        for (int x = 0; x <= gridSize - 5; x++)
+        {
+            for (int y = 0; y <= gridSize - 5; y++)
+            {
+                CellOwnership first = ownership[x, y];
+                if (first == CellOwnership.None) continue;
+
+                bool isWin = true;
+                for (int i = 1; i < 5; i++)
+                {
+                    if (ownership[x + i, y + i] != first)
+                    {
+                        isWin = false;
+                        break;
+                    }
+                }
+
+                if (isWin)
+                    return first == CellOwnership.Sky ? 1 : 2;
+            }
+        }
+
+        // 대각선 (/) 체크
+        for (int x = 0; x <= gridSize - 5; x++)
+        {
+            for (int y = 4; y < gridSize; y++)
+            {
+                CellOwnership first = ownership[x, y];
+                if (first == CellOwnership.None) continue;
+
+                bool isWin = true;
+                for (int i = 1; i < 5; i++)
+                {
+                    if (ownership[x + i, y - i] != first)
+                    {
+                        isWin = false;
+                        break;
+                    }
+                }
+
+                if (isWin)
+                    return first == CellOwnership.Sky ? 1 : 2;
+            }
+        }
+
+        return 0; // 승자 없음
+    }
+
+    void UpdateOwnershipTexts()
+    {
+        for (int cellX = 0; cellX < gridSize; cellX++)
+        {
+            for (int cellY = 0; cellY < gridSize; cellY++)
+            {
+                TextMesh textMesh = ownershipTexts[cellX, cellY];
+
+                switch (ownership[cellX, cellY])
+                {
+                    case CellOwnership.Sky:
+                        textMesh.text = "O";
+                        textMesh.gameObject.SetActive(true);
+                        break;
+                    case CellOwnership.Brown:
+                        textMesh.text = "X";
+                        textMesh.gameObject.SetActive(true);
+                        break;
+                    case CellOwnership.None:
+                        textMesh.gameObject.SetActive(false);
+                        break;
+                }
+            }
+        }
     }
 
     void DrawBackground()
@@ -152,7 +391,6 @@ public class SandSimulator : MonoBehaviour
 
     Color GetPixelColor(int x, int y, int minClickableY, int maxClickableY)
     {
-        // Check for sand or wall first
         if (grid[x, y] != CellType.Empty)
         {
             return grid[x, y] switch
@@ -164,7 +402,6 @@ public class SandSimulator : MonoBehaviour
             };
         }
 
-        // Empty cells - check if in clickable area
         bool isInClickableArea = x > 0 && x < width - 1 &&
                                   y > minClickableY && y <= maxClickableY &&
                                   y > 0;
@@ -173,7 +410,6 @@ public class SandSimulator : MonoBehaviour
 
     void DrawGridLines()
     {
-        // Vertical lines
         for (int i = 0; i <= gridSize; i++)
         {
             int x = 1 + i * cellPixelSize;
@@ -183,7 +419,6 @@ public class SandSimulator : MonoBehaviour
             }
         }
 
-        // Horizontal lines
         for (int i = 0; i <= gridSize; i++)
         {
             int y = 1 + i * cellPixelSize;
@@ -200,7 +435,6 @@ public class SandSimulator : MonoBehaviour
     {
         int spawnedCount = 0;
 
-        // Spawn in a small area around the click position
         for (int dy = 0; dy < SPAWN_PATTERN_HEIGHT && spawnedCount < amount; dy++)
         {
             for (int dx = -1; dx <= 1 && spawnedCount < amount; dx++)
@@ -219,17 +453,49 @@ public class SandSimulator : MonoBehaviour
         return spawnedCount > 0;
     }
 
-    // Helper Methods
+    public void ResetBoard()
+    {
+        // 그리드 초기화
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                if (grid[x, y] != CellType.Wall)
+                {
+                    grid[x, y] = CellType.Empty;
+                }
+            }
+        }
+
+        // 점유 상태 초기화
+        for (int x = 0; x < gridSize; x++)
+        {
+            for (int y = 0; y < gridSize; y++)
+            {
+                ownership[x, y] = CellOwnership.None;
+            }
+        }
+
+        // 텍스트 초기화
+        for (int cellX = 0; cellX < gridSize; cellX++)
+        {
+            for (int cellY = 0; cellY < gridSize; cellY++)
+            {
+                ownershipTexts[cellX, cellY].gameObject.SetActive(false);
+            }
+        }
+
+        UpdateTexture();
+    }
+
     int GetMinClickableY()
     {
-        // Ensure startRow is not greater than endRow
         int actualEndRow = Mathf.Max(clickableStartRow, clickableEndRow);
         return height - 1 - (actualEndRow * cellPixelSize);
     }
 
     int GetMaxClickableY()
     {
-        // Ensure startRow is not greater than endRow
         int actualStartRow = Mathf.Min(clickableStartRow, clickableEndRow);
         return height - 1 - ((actualStartRow - 1) * cellPixelSize);
     }
@@ -254,10 +520,18 @@ public class SandSimulator : MonoBehaviour
         return x >= 0 && x < width && y >= 0 && y < height;
     }
 
-    // Public Getters
     public CellType GetCell(int x, int y)
     {
         return IsInBounds(x, y) ? grid[x, y] : CellType.Wall;
+    }
+
+    public CellOwnership GetCellOwnership(int cellX, int cellY)
+    {
+        if (cellX >= 0 && cellX < gridSize && cellY >= 0 && cellY < gridSize)
+        {
+            return ownership[cellX, cellY];
+        }
+        return CellOwnership.None;
     }
 
     public int GetWidth() => width;
